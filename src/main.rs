@@ -89,7 +89,7 @@ async fn handler(State(args): State<AppOptions>, request: Request) -> Result<Res
 					StatusCode::OK,
 					[(
 						header::CONTENT_TYPE,
-						format!("{}; charset=utf-8", content_type),
+						format!("{content_type}; charset=utf-8"),
 					)],
 					body,
 				)
