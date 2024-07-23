@@ -1,4 +1,5 @@
 use anyhow::Result;
+use askama::Template;
 use axum::{
 	extract::{Request, State},
 	http::{header, StatusCode},
@@ -7,6 +8,7 @@ use axum::{
 };
 use camino::Utf8Path;
 use clap::Parser;
+use glob::glob;
 use std::fs;
 use tokio::net::TcpListener;
 use tower_http::{compression::CompressionLayer, trace::TraceLayer};
@@ -69,16 +71,22 @@ async fn main() -> Result<()> {
 	Ok(())
 }
 
+#[derive(Template)]
+#[template(path = "index.html")]
+struct View {
+	pub list: Vec<String>,
+}
+
 async fn handler(State(args): State<AppOptions>, request: Request) -> Result<Response, AppError> {
-	let mut path = request.uri().path().to_string();
+	let path = request.uri().path().to_string();
+	let is_index = path.to_string().ends_with('/');
+	let path = path.trim_start_matches('/').to_string();
+	let mut path = Utf8Path::new(args.directory.as_str()).join(path);
+	let full_path = path.clone();
 
-	if path.ends_with('/') {
-		path.push_str("index.html");
+	if is_index {
+		path.push("index.html");
 	}
-
-	path = path.trim_start_matches('/').to_string();
-
-	let path = Utf8Path::new(args.directory.as_str()).join(path);
 
 	if let Some(ext) = path.extension() {
 		let content_type = mime_guess::from_ext(ext).first();
@@ -98,5 +106,33 @@ async fn handler(State(args): State<AppOptions>, request: Request) -> Result<Res
 		}
 	}
 
-	Ok(StatusCode::NOT_FOUND.into_response())
+	let mut directory = full_path.as_path();
+
+	if !is_index {
+		directory = directory.parent().expect("should have a parent");
+	}
+
+	let results = glob(format!("{directory}**/*.html").as_str()).ok();
+	let mut list = Vec::new();
+
+	if let Some(paths) = results {
+		for path in paths.flatten() {
+			let path = Utf8Path::from_path(&path).expect("should be a utf path");
+
+			list.push(path.to_string());
+
+			if list.len() == 100 {
+				break;
+			}
+		}
+	}
+
+	let html = View { list }.render()?;
+
+	Ok((
+		StatusCode::NOT_FOUND,
+		[(header::CONTENT_TYPE, "text/html; charset=utf-8")],
+		html,
+	)
+		.into_response())
 }
