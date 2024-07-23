@@ -59,14 +59,16 @@
 <body>
 	<div>
 		<h1>404 Not Found</h1>
-		<p>You may be looking for...</p>
-		<ul>
-		{% for item in list %}
-			<li>
-				<a href="{{item}}">{{item}}</a>
-			</li>
-		{% endfor %}
-		</ul>
+		{% if list.len() > 0 %}
+			<p>You may be looking for...</p>
+			<ul>
+			{% for item in list %}
+				<li>
+					<a href="{{item}}">{{item}}</a>
+				</li>
+			{% endfor %}
+			</ul>
+		{% endif %}
 	</div>
 </body>
 
