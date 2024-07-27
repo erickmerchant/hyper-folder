@@ -27,7 +27,7 @@
 			font-family: system-ui, sans-serif;
 		}
 
-		div {
+		section {
 			margin-inline: auto;
 			padding-block: 2em;
 			inline-size: max-content;
@@ -57,7 +57,7 @@
 </head>
 
 <body>
-	<div>
+	<section>
 		<h1>404 Not Found</h1>
 		{% if list.len() > 0 %}
 			<p>You may be looking for...</p>
@@ -69,7 +69,7 @@
 			{% endfor %}
 			</ul>
 		{% endif %}
-	</div>
+	</section>
 </body>
 
 </html>
