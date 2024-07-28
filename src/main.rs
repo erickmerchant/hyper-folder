@@ -88,11 +88,13 @@ async fn handler(State(args): State<AppOptions>, request: Request) -> Result<Res
 		path.push("index.html");
 	}
 
-	if let Some((content_type, body)) = path.clone().extension().and_then(|ext| {
-		mime_guess::from_ext(ext)
-			.first()
-			.and_then(|content_type| fs::read(path).ok().map(|body| (content_type, body)))
-	}) {
+	if let (Some(content_type), Ok(body)) = (
+		path.clone()
+			.extension()
+			.or(Some("txt"))
+			.and_then(|ext| mime_guess::from_ext(ext).first()),
+		fs::read(path),
+	) {
 		Ok((
 			StatusCode::OK,
 			[(
