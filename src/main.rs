@@ -88,50 +88,51 @@ async fn handler(State(args): State<AppOptions>, request: Request) -> Result<Res
 		path.push("index.html");
 	}
 
-	if let Some((content_type, body)) = path
+	if let Some(content_type) = path
 		.extension()
 		.or(Some("txt"))
 		.and_then(|ext| mime_guess::from_ext(ext).first())
-		.and_then(|content_type| fs::read(path).ok().map(|body| (content_type, body)))
 	{
-		Ok((
-			StatusCode::OK,
-			[(
-				header::CONTENT_TYPE,
-				format!("{content_type}; charset=utf-8"),
-			)],
-			body,
-		)
-			.into_response())
-	} else {
-		let mut directory = full_path.as_path();
-
-		if !is_index {
-			directory = directory.parent().expect("should have a parent");
+		if let Ok(body) = fs::read(path) {
+			return Ok((
+				StatusCode::OK,
+				[(
+					header::CONTENT_TYPE,
+					format!("{content_type}; charset=utf-8"),
+				)],
+				body,
+			)
+				.into_response());
 		}
+	}
 
-		let results = glob(format!("{directory}**/*.html").as_str()).ok();
-		let mut list = Vec::new();
+	let mut directory = full_path.as_path();
 
-		if let Some(paths) = results {
-			for path in paths.flatten() {
-				let path = Utf8Path::from_path(&path).expect("should be a utf path");
+	if !is_index {
+		directory = directory.parent().expect("should have a parent");
+	}
 
-				list.push(path.to_string());
+	let results = glob(format!("{directory}**/*.html").as_str()).ok();
+	let mut list = Vec::new();
 
-				if list.len() == 100 {
-					break;
-				}
+	if let Some(paths) = results {
+		for path in paths.flatten() {
+			let path = Utf8Path::from_path(&path).expect("should be a utf path");
+
+			list.push(path.to_string());
+
+			if list.len() == 100 {
+				break;
 			}
 		}
-
-		let html = View { list }.render()?;
-
-		Ok((
-			StatusCode::NOT_FOUND,
-			[(header::CONTENT_TYPE, "text/html; charset=utf-8")],
-			html,
-		)
-			.into_response())
 	}
+
+	let html = View { list }.render()?;
+
+	Ok((
+		StatusCode::NOT_FOUND,
+		[(header::CONTENT_TYPE, "text/html; charset=utf-8")],
+		html,
+	)
+		.into_response())
 }
