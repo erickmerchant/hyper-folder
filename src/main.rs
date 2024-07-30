@@ -116,14 +116,10 @@ async fn handler(State(args): State<AppOptions>, request: Request) -> Result<Res
 	let mut list = Vec::new();
 
 	if let Some(paths) = results {
-		for path in paths.flatten() {
+		for path in paths.flatten().take(100) {
 			let path = Utf8Path::from_path(&path).expect("should be a utf path");
 
 			list.push(path.to_string());
-
-			if list.len() == 100 {
-				break;
-			}
 		}
 	}
 
