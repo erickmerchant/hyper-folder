@@ -1,5 +1,4 @@
 use anyhow::Result;
-use askama::Template;
 use axum::{
 	extract::{Request, State},
 	http::{header, StatusCode},
@@ -70,10 +69,6 @@ async fn main() -> Result<()> {
 	Ok(())
 }
 
-#[derive(Template)]
-#[template(path = "index.html")]
-struct View;
-
 async fn handler(State(args): State<AppOptions>, request: Request) -> Result<Response, AppError> {
 	let path = request.uri().path().to_string();
 	let is_index = path.to_string().ends_with('/');
@@ -102,12 +97,5 @@ async fn handler(State(args): State<AppOptions>, request: Request) -> Result<Res
 		}
 	}
 
-	let html = View.render()?;
-
-	Ok((
-		StatusCode::NOT_FOUND,
-		[(header::CONTENT_TYPE, "text/html; charset=utf-8")],
-		html,
-	)
-		.into_response())
+	Ok(StatusCode::NOT_FOUND.into_response())
 }

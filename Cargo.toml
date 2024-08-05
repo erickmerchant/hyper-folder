@@ -6,7 +6,6 @@ edition = "2021"
 
 [dependencies]
 anyhow = { version = "1.0.70", features = ["backtrace"] }
-askama = "0.12.1"
 axum = "0.7.1"
 camino = "1.1.7"
 clap = { version = "4.5.8", features = ["derive"] }
