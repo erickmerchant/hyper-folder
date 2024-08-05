@@ -8,7 +8,6 @@ use axum::{
 };
 use camino::Utf8Path;
 use clap::Parser;
-use glob::glob;
 use std::fs;
 use tokio::net::TcpListener;
 use tower_http::{compression::CompressionLayer, trace::TraceLayer};
@@ -73,16 +72,13 @@ async fn main() -> Result<()> {
 
 #[derive(Template)]
 #[template(path = "index.html")]
-struct View {
-	pub list: Vec<String>,
-}
+struct View;
 
 async fn handler(State(args): State<AppOptions>, request: Request) -> Result<Response, AppError> {
 	let path = request.uri().path().to_string();
 	let is_index = path.to_string().ends_with('/');
 	let path = path.trim_start_matches('/').to_string();
 	let mut path = Utf8Path::new(args.directory.as_str()).join(path);
-	let full_path = path.clone();
 
 	if is_index {
 		path.push("index.html");
@@ -106,24 +102,7 @@ async fn handler(State(args): State<AppOptions>, request: Request) -> Result<Res
 		}
 	}
 
-	let mut directory = full_path.as_path();
-
-	if !is_index {
-		directory = directory.parent().expect("should have a parent");
-	}
-
-	let results = glob(format!("{directory}**/*.html").as_str()).ok();
-	let mut list = Vec::new();
-
-	if let Some(paths) = results {
-		for path in paths.flatten().take(100) {
-			let path = Utf8Path::from_path(&path).expect("should be a utf path");
-
-			list.push(path.to_string());
-		}
-	}
-
-	let html = View { list }.render()?;
+	let html = View.render()?;
 
 	Ok((
 		StatusCode::NOT_FOUND,

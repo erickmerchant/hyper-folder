@@ -36,13 +36,13 @@
 			gap: 1em;
 		}
 
-		ul {
-			padding-block-end: 2em;
-		}
-
 		h1 {
 			font-size: 2em;
 			font-weight: 600;
+		}
+
+		ul {
+			padding-block-end: 2em;
 		}
 
 		li {
@@ -59,16 +59,6 @@
 <body>
 	<section>
 		<h1>404 Not Found</h1>
-		{% if list.len() > 0 %}
-			<p>You may be looking for...</p>
-			<ul>
-			{% for item in list %}
-				<li>
-					<a href="{{item}}">{{item}}</a>
-				</li>
-			{% endfor %}
-			</ul>
-		{% endif %}
 	</section>
 </body>
 
