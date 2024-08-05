@@ -79,11 +79,7 @@ async fn handler(State(args): State<AppOptions>, request: Request) -> Result<Res
 		path.push("index.html");
 	}
 
-	if let Some(content_type) = path
-		.extension()
-		.or(Some("txt"))
-		.and_then(|ext| mime_guess::from_ext(ext).first())
-	{
+	if let Some(content_type) = mime_guess::from_path(&path).first() {
 		if let Ok(body) = fs::read(path) {
 			return Ok((
 				StatusCode::OK,
