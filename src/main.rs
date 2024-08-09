@@ -45,6 +45,7 @@ pub struct AppOptions {
 #[tokio::main]
 async fn main() -> Result<()> {
 	let args = AppOptions::parse();
+	let port = args.port.clone();
 
 	tracing_subscriber::fmt()
 		.compact()
@@ -53,14 +54,14 @@ async fn main() -> Result<()> {
 
 	let app = Router::new()
 		.fallback(handler)
-		.with_state(args.clone())
+		.with_state(args)
 		.layer(CompressionLayer::new())
 		.layer(TraceLayer::new_for_http());
-	let listener = TcpListener::bind(("0.0.0.0", args.port))
+	let listener = TcpListener::bind(("0.0.0.0", port))
 		.await
 		.expect("should listen");
 
-	tracing::debug!("listening on port {}", args.port);
+	tracing::debug!("listening on port {}", port);
 
 	serve(listener, app.into_make_service())
 		.await
