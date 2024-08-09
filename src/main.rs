@@ -45,7 +45,7 @@ pub struct AppOptions {
 #[tokio::main]
 async fn main() -> Result<()> {
 	let args = AppOptions::parse();
-	let port = args.port.clone();
+	let port = args.port;
 
 	tracing_subscriber::fmt()
 		.compact()
@@ -71,9 +71,9 @@ async fn main() -> Result<()> {
 }
 
 async fn handler(State(args): State<AppOptions>, request: Request) -> Result<Response, AppError> {
-	let path = request.uri().path().to_string();
-	let is_index = path.to_string().ends_with('/');
-	let path = path.trim_start_matches('/').to_string();
+	let path = request.uri().path();
+	let is_index = path.ends_with('/');
+	let path = path.trim_start_matches('/');
 	let mut path = Utf8Path::new(args.directory.as_str()).join(path);
 
 	if is_index {
