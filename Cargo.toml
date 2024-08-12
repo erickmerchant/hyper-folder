@@ -13,10 +13,6 @@ hyper = "1.0.1"
 mime_guess = "2.0.4"
 serde = { version = "1.0.198", features = ["derive"] }
 tokio = { version = "1.27.0", features = ["macros", "rt-multi-thread"] }
-tower-http = { version = "0.5.0", features = [
-    "compression-gzip",
-    "compression-zstd",
-    "trace",
-] }
+tower-http = { version = "0.5.0", features = ["compression-gzip", "trace"] }
 tracing = "0.1.37"
 tracing-subscriber = { version = "0.3.17", features = ["env-filter"] }
