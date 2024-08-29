@@ -1,4 +1,4 @@
-use crate::{Args, Error};
+use crate::Error;
 use anyhow::Result;
 use axum::{
 	extract::{Request, State},
@@ -6,13 +6,16 @@ use axum::{
 	response::{IntoResponse, Response},
 };
 use camino::Utf8Path;
-use std::fs;
+use std::{fs, sync::Arc};
 
-pub async fn handler(State(args): State<Args>, request: Request) -> Result<Response, Error> {
+pub async fn handler(
+	State(state): State<Arc<crate::State>>,
+	request: Request,
+) -> Result<Response, Error> {
 	let path = request.uri().path();
 	let is_index = path.ends_with('/');
 	let path = path.trim_start_matches('/');
-	let mut path = Utf8Path::new(args.directory.as_str()).join(path);
+	let mut path = Utf8Path::new(state.args.directory.as_str()).join(path);
 
 	if is_index {
 		path.push("index.html");
