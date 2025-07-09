@@ -1,38 +1,24 @@
-mod args;
-mod error;
-mod routes;
-mod state;
+#[cfg(test)]
+mod tests;
 
 use anyhow::Result;
-use axum::{serve, Router};
-use error::Error;
-use routes::fallback;
-use state::State;
-use std::sync::Arc;
+use axum::serve;
+use hyper_folder::{get_app, state};
 use tokio::net::TcpListener;
-use tower_http::{compression::CompressionLayer, trace::TraceLayer};
+use tracing_subscriber::EnvFilter;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-	let state = State::default();
-	let port = state.args.port;
-	let state = Arc::new(state);
+	let state = state::State::from_env();
 
 	tracing_subscriber::fmt()
-		.compact()
-		.with_max_level(tracing::Level::DEBUG)
+		.with_env_filter(EnvFilter::try_from_default_env().unwrap_or_default())
 		.init();
 
-	let app = Router::new()
-		.fallback(fallback::handler)
-		.with_state(state)
-		.layer(CompressionLayer::new())
-		.layer(TraceLayer::new_for_http());
-	let listener = TcpListener::bind(("0.0.0.0", port))
+	let app = get_app(state.clone());
+	let listener = TcpListener::bind(("0.0.0.0", state.args.port))
 		.await
 		.expect("should listen");
-
-	tracing::debug!("listening on port {}", port);
 
 	serve(listener, app.into_make_service())
 		.await
