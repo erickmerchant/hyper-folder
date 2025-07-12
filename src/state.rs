@@ -13,8 +13,8 @@ pub struct Args {
 
 impl State {
 	pub fn from_env() -> Self {
-		let base_dir: String = get_env("APP_BASE_DIR", ".".to_string());
-		let port: u16 = get_env("APP_PORT", 8080);
+		let base_dir: String = get_env("HYPER_FOLDER_DIR", ".".to_string());
+		let port: u16 = get_env("HYPER_FOLDER_PORT", 8080);
 
 		Self {
 			args: Args { base_dir, port },
